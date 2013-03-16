@@ -11,10 +11,13 @@ http://www18.atwiki.jp/javascripter/pages/26.html
 使用方法
 --------
 1. SmartyのコアライブラリをCakePHPのvendorsディレクトリにコピーします。
- cp -pr smarty-x.x/lib cakephp-x.x/vendors/smarty
 
-2. SmartyView.php をコピーします。
- cp -pr smartyview/app cakephp-x.x/
+    cp -pr smarty-x.x/lib cakephp-x.x/vendors/smarty
+
+2. smartyviewツリーをコピーします。
+
+    cp -pr smartyview/app cakephp-x.x/
 
 3. tmpのパーミッションを書き込み可能にしておきます。
- chmod -R a+w cakephp-x-x/app/tmp
+
+    chmod -R a+w cakephp-x-x/app/tmp
