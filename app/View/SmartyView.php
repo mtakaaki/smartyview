@@ -4,16 +4,16 @@ class SmartyView extends View {
 	function __construct (&$controller) {
 		parent::__construct($controller);
 		if (is_object($controller)) {
-			$count = count($this->__passedVars);
+			$count = count($this->_passedVars);
 			for ($j = 0; $j < $count; $j++) {
-				$var = $this->__passedVars[$j];
+				$var = $this->_passedVars[$j];
 				$this->{$var} = $controller->{$var};
 			}
 		}
 
 		$this->Smarty = new Smarty();
 
-		$this->subDir = 'smarty'.DS;
+		$this->subDir = '';
 
 		$this->ext= '.tpl';
 		//$this->Smarty->plugins_dir[] = VENDORS.DS.'smarty'.DS.'plugins';
