@@ -20,7 +20,7 @@ class SmartyView extends View {
 		$this->Smarty->compile_dir = TMP.'smarty'.DS.'compile'.DS;
 		$this->Smarty->cache_dir = TMP.'smarty'.DS.'cache'.DS;
 		$this->Smarty->error_reporting = 'E_ALL & ~E_NOTICE';
-		$this->Smarty->debugging = true;
+		$this->Smarty->debugging = false;
 		$this->Smarty->compile_check = true;
 		$this->viewVars['params'] = $this->params;
 
@@ -28,6 +28,9 @@ class SmartyView extends View {
 	}
 
 	protected function _render($___viewFn, $___dataForView = array()) {
+		if (substr($___viewFn, -4, 4) == '.ctp') {
+			return parent::_render($___viewFn, $___dataForView);
+		}
 		$trace = debug_backtrace();
 		$caller = array_shift($trace);
 		if ($caller === "element") parent::_render($___viewFn, $___dataForView);
