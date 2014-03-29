@@ -1,66 +1,66 @@
 <?php
-App::import('Vendor', 'Smarty', array('file' => 'smarty'.DS.'Smarty.class.php'));
+App::import('Vendor', 'Smarty', array('file' => 'Smarty' . DS . 'Smarty.class.php'));
+
+/**
+ * Original :
+ *	CakePHP 2.0 + Smarty
+ *	http://www18.atwiki.jp/javascripter/pages/26.html 2011/10/20
+ *
+ * Customized :
+ *	CakePHP 2.4.6 + Smarty 3.1.17
+ */
 class SmartyView extends View {
-	function __construct (&$controller) {
+	private $Smarty;
+
+	public function __construct(Controller $controller = null) {
 		parent::__construct($controller);
-		if (is_object($controller)) {
-			$count = count($this->_passedVars);
-			for ($j = 0; $j < $count; $j++) {
-				$var = $this->_passedVars[$j];
-				$this->{$var} = $controller->{$var};
-			}
-		}
 
 		$this->Smarty = new Smarty();
 
 		$this->subDir = '';
 
-		$this->ext= '.tpl';
-		//$this->Smarty->plugins_dir[] = VENDORS.DS.'smarty'.DS.'plugins';
-		$this->Smarty->compile_dir = TMP.'smarty'.DS.'compile'.DS;
-		$this->Smarty->cache_dir = TMP.'smarty'.DS.'cache'.DS;
-		$this->Smarty->error_reporting = 'E_ALL & ~E_NOTICE';
+		$this->ext = '.tpl';
+		$pluginsDir = $this->Smarty->plugins_dir;
+		$pluginsDir[] = APP . 'Vendor' . DS . 'smarty' . DS . 'plugins' . DS;
+		$this->Smarty->plugins_dir = $pluginsDir;
+		$this->Smarty->compile_dir = TMP . 'smarty' . DS . 'compile' . DS;
+		$this->Smarty->cache_dir = TMP . 'smarty' . DS . 'cache' . DS;
+		$this->Smarty->error_reporting = 'E_ALL';
 		$this->Smarty->debugging = false;
 		$this->Smarty->compile_check = true;
-		$this->viewVars['params'] = $this->params;
 
-		$this->Helpers = new HelperCollection($this);
+		// Assign HelperObjects to smarty variables
+		$helpers = HelperCollection::normalizeObjectArray($this->helpers);
+		foreach ($helpers as $name => $properties) {
+			list(, $class) = pluginSplit($properties['class']);
+			$this->Smarty->assign($name, $this->{$class});
+		}
+
+		// Assign self View object
+		$this->Smarty->assign('this', $this);
+		$this->Smarty->assign('View', $this);
 	}
 
-	protected function _render($___viewFn, $___dataForView = array()) {
-		if (substr($___viewFn, -4, 4) == '.ctp') {
-			return parent::_render($___viewFn, $___dataForView);
+	protected function _render($viewFile, $data = array()) {
+		if (substr($viewFile, -4, 4) == '.ctp') {
+			return parent::_render($viewFile, $data);
 		}
 		$trace = debug_backtrace();
 		$caller = array_shift($trace);
-		if ($caller === "element") parent::_render($___viewFn, $___dataForView);
+		if ($caller === "element") parent::_render($viewFile, $data);
 
-		if (empty($___dataForView)) {
-			$___dataForView = $this->viewVars;
+		if (empty($data)) {
+			$data = $this->viewVars;
 		}
 
-		extract($___dataForView, EXTR_SKIP);
-
-		foreach($___dataForView as $data => $value) {
-			if(!is_object($data)) {
+		foreach ($data as $data => $value) {
+			if (!is_object($data)) {
 				$this->Smarty->assign($data, $value);
 			}
 		}
 
-		$this->Smarty->assign('View', $this);
-
 		ob_start();
-		$this->Smarty->display($___viewFn);
+		$this->Smarty->display($viewFile);
 		return ob_get_clean();
-	}
-
-	public function loadHelpers() {
-		$helpers = HelperCollection::normalizeObjectArray($this->helpers);
-		foreach ($helpers as $name => $properties) {
-			list($plugin, $class) = pluginSplit($properties['class']);
-			$this->{$class} = $this->Helpers->load($properties['class'], $properties['settings']);
-			$this->Smarty->assign($name, $this->{$class});
-		}
-		$this->_helpersLoaded = true;
 	}
 }
